@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#4D96FF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="成长小达人">
+  <title>🌱 成长小达人</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%234D96FF'/%3E%3Ctext x='50%25' y='.78em' font-size='130' text-anchor='middle' dominant-baseline='middle'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <h1>
+        <span class="logo-icon">🌱</span>
+        <span>成长小达人</span>
+      </h1>
+      <div class="points-display">
+        <span class="points-label">我的积分</span>
+        <span class="points-value" id="totalPoints">0</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent">
+      <!-- Today View -->
+      <section class="view active" id="view-today">
+        <h2 class="view-title">📅 今日任务</h2>
+        <p class="view-subtitle" id="todayDate"></p>
+
+        <!-- 日期选择条（点不同日期补打卡） -->
+        <div class="date-strip-wrap">
+          <div class="date-strip" id="dateStrip"></div>
+        </div>
+
+        <p class="today-tip" id="todayTip">💡 点任务打卡 · 点上面的日期能看哪天的任务 · 可以补卡</p>
+
+        <div id="todayTasks" class="task-list"></div>
+        <div id="todayEmpty" class="empty-state" hidden>
+          <div class="empty-icon">🎯</div>
+          <p id="todayEmptyText">今天还没有任务哦~</p>
+          <p class="empty-hint">去"任务"页面添加吧</p>
+          <button class="btn btn-primary" onclick="switchView('tasks')">去添加任务</button>
+        </div>
+      </section>
+
+      <!-- Tasks View -->
+      <section class="view" id="view-tasks">
+        <div class="view-header">
+          <h2 class="view-title">📋 我的任务</h2>
+          <button class="btn btn-primary btn-add" id="btnAddTask">+ 新建</button>
+        </div>
+        <p class="view-subtitle">点击任务卡片可以编辑哦</p>
+        <div id="tasksList" class="task-list"></div>
+        <div id="tasksEmpty" class="empty-state" hidden>
+          <div class="empty-icon">📝</div>
+          <p>还没有任务呢~</p>
+          <p class="empty-hint">点上面的"+ 新建"加一个吧</p>
+          <button class="btn btn-primary" id="btnAddTaskEmpty">+ 添加第一个任务</button>
+        </div>
+      </section>
+
+      <!-- Wishes View -->
+      <section class="view" id="view-wishes">
+        <div class="view-header">
+          <h2 class="view-title">🌟 愿望清单</h2>
+          <button class="btn btn-primary btn-add" id="btnAddWish">+ 新愿望</button>
+        </div>
+        <div class="wish-tip">
+          💡 攒够积分就能兑换，兑换后找爸爸妈妈要奖励吧~
+        </div>
+        <div id="wishesList" class="wish-list"></div>
+        <div id="wishesEmpty" class="empty-state" hidden>
+          <div class="empty-icon">🎁</div>
+          <p>还没有愿望哦~</p>
+          <p class="empty-hint">写下你想要的东西</p>
+          <button class="btn btn-primary" id="btnAddWishEmpty">+ 添加第一个愿望</button>
+        </div>
+      </section>
+
+      <!-- Stats View -->
+      <section class="view" id="view-stats">
+        <h2 class="view-title">📊 我的成长</h2>
+
+        <div class="stat-cards">
+          <div class="stat-card stat-card-blue">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value" id="statTotalPoints">0</div>
+            <div class="stat-label">总积分</div>
+          </div>
+          <div class="stat-card stat-card-green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="statTotalCheckins">0</div>
+            <div class="stat-label">完成任务</div>
+          </div>
+          <div class="stat-card stat-card-orange">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value" id="statStreak">0</div>
+            <div class="stat-label">连续天数</div>
+          </div>
+        </div>
+
+        <h3 class="section-subtitle">本周完成度 🎁</h3>
+        <div class="week-card" id="weekCard">
+          <div class="week-card-header">
+            <div>
+              <div class="week-card-title">本周任务</div>
+              <div class="week-card-range" id="weekRange">-</div>
+            </div>
+            <div class="week-card-rate-wrap">
+              <div class="week-card-rate" id="weekRate">0%</div>
+              <div class="week-card-count" id="weekCount">0/0</div>
+            </div>
+          </div>
+          <div class="week-progress">
+            <div class="week-progress-bar">
+              <div class="week-progress-fill" id="weekRateFill" style="width: 0%"></div>
+              <div class="week-progress-mark" style="left: 70%"></div>
+              <div class="week-progress-mark" style="left: 90%"></div>
+            </div>
+          </div>
+          <div class="week-reward-hint" id="weekRewardHint">
+            70% 以上奖励 <b>7 积分</b> · 90% 以上奖励 <b>5 元零花钱</b>
+          </div>
+          <button class="btn btn-primary btn-full" id="btnSettleWeek">结算本周奖励</button>
+        </div>
+
+        <h3 class="section-subtitle">打卡日历</h3>
+        <div class="mode-tabs">
+          <button type="button" class="mode-tab active" data-mode="month">📅 月</button>
+          <button type="button" class="mode-tab" data-mode="year">🗓️ 年</button>
+        </div>
+
+        <!-- 月视图 -->
+        <div id="calendarMonth" class="calendar-wrap">
+          <div class="month-nav">
+            <button type="button" class="month-arrow" id="monthPrev" aria-label="上个月">‹</button>
+            <div class="month-title" id="monthTitle">2026 年 10 月</div>
+            <button type="button" class="month-arrow" id="monthNext" aria-label="下个月">›</button>
+          </div>
+          <div id="monthCalendar" class="month-grid-wrap"></div>
+          <div class="month-summary" id="monthSummary"></div>
+        </div>
+
+        <!-- 年视图 -->
+        <div id="calendarYear" class="calendar-wrap" hidden>
+          <div class="year-nav">
+            <button type="button" class="year-arrow" id="yearPrev" aria-label="上一年">‹</button>
+            <div class="year-title" id="yearTitle">2026 年</div>
+            <button type="button" class="year-arrow" id="yearNext" aria-label="下一年">›</button>
+          </div>
+          <div id="yearHeatmap" class="year-heatmap"></div>
+          <div class="month-legend">
+            <span>少</span>
+            <div class="legend-cell" style="background: var(--color-border-light)"></div>
+            <div class="legend-cell" style="background: #C8E6C9"></div>
+            <div class="legend-cell" style="background: #81C784"></div>
+            <div class="legend-cell" style="background: var(--color-success)"></div>
+            <div class="legend-cell" style="background: #2E7D32"></div>
+            <span>多</span>
+          </div>
+          <div class="month-summary" id="yearSummary"></div>
+        </div>
+
+        <h3 class="section-subtitle">分类统计</h3>
+        <div id="categoryStats" class="category-stats"></div>
+
+        <h3 class="section-subtitle">已兑换奖励</h3>
+        <div id="redeemedList" class="redeemed-list"></div>
+
+        <h3 class="section-subtitle">周奖励记录</h3>
+        <div id="weeklyRewardsList" class="weekly-rewards-list"></div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="today">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">今日</span>
+      </button>
+      <button class="nav-btn" data-view="tasks">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">任务</span>
+      </button>
+      <button class="nav-btn" data-view="wishes">
+        <span class="nav-icon">🌟</span>
+        <span class="nav-label">愿望</span>
+      </button>
+      <button class="nav-btn" data-view="stats">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">成长</span>
+      </button>
+    </nav>
+
+    <!-- Modal: Add/Edit Task -->
+    <div class="modal" id="taskModal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="taskModalTitle">新建任务</h3>
+          <button class="modal-close" id="taskModalClose" aria-label="关闭">✕</button>
+        </div>
+        <form id="taskForm" class="task-form">
+          <input type="hidden" id="taskId">
+
+          <label class="form-label">任务名称</label>
+          <input type="text" id="taskTitle" placeholder="比如：刷牙、跳绳" required maxlength="20">
+
+          <label class="form-label">选个图标</label>
+          <div class="emoji-picker" id="emojiPicker"></div>
+          <input type="hidden" id="taskIcon" value="⭐">
+
+          <label class="form-label">分类</label>
+          <div class="pill-row" id="categoryPills">
+            <button type="button" class="pill" data-category="生活习惯">生活习惯</button>
+            <button type="button" class="pill" data-category="家庭基础家规">家庭基础家规</button>
+            <button type="button" class="pill" data-category="运动习惯">运动习惯</button>
+            <button type="button" class="pill" data-category="学习习惯">学习习惯</button>
+            <button type="button" class="pill pill-add" data-category="custom">+ 自定义</button>
+          </div>
+          <input type="hidden" id="taskCategory" value="生活习惯">
+          <input type="text" id="taskCategoryCustom" class="form-input-extra" placeholder="自定义分类名（比如：艺术）" hidden maxlength="8">
+
+          <label class="form-label">每次打卡得几分？</label>
+          <div class="pill-row" id="pointsPills">
+            <button type="button" class="pill" data-points="1">⭐ 1</button>
+            <button type="button" class="pill" data-points="2">⭐⭐ 2</button>
+            <button type="button" class="pill" data-points="5">⭐⭐⭐ 5</button>
+            <button type="button" class="pill" data-points="10">⭐⭐⭐⭐ 10</button>
+            <button type="button" class="pill pill-add" data-points="custom">自定义</button>
+          </div>
+          <input type="hidden" id="taskPoints" value="1">
+          <input type="number" id="taskPointsCustom" class="form-input-extra" min="1" max="999" placeholder="自定义分值（1-999）" hidden>
+
+          <label class="form-label">什么时候做？</label>
+          <div class="pill-row" id="recurrencePills">
+            <button type="button" class="pill" data-recurrence="daily">每天</button>
+            <button type="button" class="pill" data-recurrence="weekdays">工作日</button>
+            <button type="button" class="pill" data-recurrence="weekends">周末</button>
+            <button type="button" class="pill" data-recurrence="custom">自选</button>
+          </div>
+          <input type="hidden" id="taskRecurrence" value="daily">
+          <div class="weekday-picker" id="weekdayPicker" hidden>
+            <button type="button" class="day-pill" data-day="1">一</button>
+            <button type="button" class="day-pill" data-day="2">二</button>
+            <button type="button" class="day-pill" data-day="3">三</button>
+            <button type="button" class="day-pill" data-day="4">四</button>
+            <button type="button" class="day-pill" data-day="5">五</button>
+            <button type="button" class="day-pill" data-day="6">六</button>
+            <button type="button" class="day-pill" data-day="0">日</button>
+          </div>
+
+          <label class="form-label">任务说明（可选）</label>
+          <textarea id="taskDescription" placeholder="比如：早晚各一次 / 跟爸爸一起" maxlength="50"></textarea>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-danger" id="btnDeleteTask" hidden>删除</button>
+            <button type="submit" class="btn btn-primary btn-flex">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Add/Edit Wish -->
+    <div class="modal" id="wishModal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="wishModalTitle">新建愿望</h3>
+          <button class="modal-close" id="wishModalClose" aria-label="关闭">✕</button>
+        </div>
+        <form id="wishForm" class="task-form">
+          <input type="hidden" id="wishId">
+
+          <label class="form-label">愿望名称</label>
+          <input type="text" id="wishTitle" placeholder="比如：冰淇淋、新玩具" required maxlength="20">
+
+          <label class="form-label">选个图标</label>
+          <div class="emoji-picker" id="wishEmojiPicker"></div>
+          <input type="hidden" id="wishIcon" value="🎁">
+
+          <label class="form-label">需要多少积分？</label>
+          <input type="number" id="wishPoints" class="form-input" min="1" max="9999" value="50" required>
+
+          <label class="form-label">奖励内容（可选）</label>
+          <textarea id="wishNote" placeholder="比如：周末去商场买 / 直接给20元" maxlength="50"></textarea>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-danger" id="btnDeleteWish" hidden>删除</button>
+            <button type="submit" class="btn btn-primary btn-flex">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Reward -->
+    <div class="modal modal-centered" id="rewardModal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-small">
+        <div class="reward-content">
+          <div class="reward-icon" id="rewardIcon">🎁</div>
+          <p class="reward-title" id="rewardTitle">冰淇淋</p>
+          <p class="reward-message">🎉 太棒啦！找爸爸妈妈兑换奖励吧~</p>
+          <button class="btn btn-primary btn-full" id="btnCloseReward">知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Template Selection (First Run) -->
+    <div class="modal modal-centered" id="templateModal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h3>🌱 挑几个任务开始</h3>
+            <p class="modal-subtitle">勾选你准备打卡的任务，以后还能加</p>
+          </div>
+        </div>
+        <div id="templateList" class="template-list"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary btn-flex" id="btnSkipTemplates">跳过</button>
+          <button type="button" class="btn btn-primary btn-flex" id="btnApplyTemplates">应用选中的</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Weekly Result -->
+    <div class="modal modal-centered" id="weekResultModal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-small">
+        <div class="reward-content">
+          <div class="reward-icon" id="weekResultIcon">🎉</div>
+          <p class="reward-title" id="weekResultTitle">太棒啦！</p>
+          <p class="reward-message" id="weekResultDetail">本周完成率 95%</p>
+          <button class="btn btn-success btn-full" id="btnCashGiven" hidden>✅ 已发放，标记一下</button>
+          <button class="btn btn-primary btn-full" id="btnCloseWeekResult">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
